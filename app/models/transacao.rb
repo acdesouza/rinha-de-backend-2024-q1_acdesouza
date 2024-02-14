@@ -4,6 +4,7 @@ class Transacao < ApplicationRecord
   enum :tipo, credito: 'c', debito: 'd'
 
   validates :valor, numericality: { only_integer: true, greater_than: 0 }
+  validates :descricao, length: { in: 1..10 }
   validate :respects_cliente_limite
 
   private

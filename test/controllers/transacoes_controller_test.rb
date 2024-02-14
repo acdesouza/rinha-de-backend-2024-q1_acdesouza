@@ -66,4 +66,28 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  test "should NOT create transacao empty descricao" do
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: @cliente.id), params: {
+        valor: 1000,
+        tipo: "c",
+        descricao: ""
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "should NOT create transacao using more than 10 chars for descricao" do
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: @cliente.id), params: {
+        valor: 1000,
+        tipo: "c",
+        descricao: "DESCRICAO_TOO_LONG"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
 end
