@@ -102,4 +102,17 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  test "should NOT create transacao without a valid Cliente" do
+    non_existing_client_id = 666
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: non_existing_client_id), params: {
+        valor: 1000,
+        tipo: "c",
+        descricao: "NON_CLIENT"
+      }, as: :json
+    end
+
+    assert_response :not_found
+  end
 end
