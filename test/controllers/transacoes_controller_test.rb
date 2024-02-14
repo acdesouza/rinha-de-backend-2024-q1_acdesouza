@@ -90,4 +90,16 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  test "should NOT create transacao with a tipo different from c or d" do
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: @cliente.id), params: {
+        valor: 1000,
+        tipo: "w",
+        descricao: "WRONG_TIPO"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
 end
