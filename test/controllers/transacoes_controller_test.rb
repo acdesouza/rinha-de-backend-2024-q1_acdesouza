@@ -5,6 +5,39 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
     @cliente = clientes(:cliente_one)
   end
 
+  test "should show Cliente's Extrato with last 10 Transacoes" do
+    transacao_01 = transacoes(:cliente_one_first)
+    transacao_02 = transacoes(:cliente_one_second)
+    transacao_03 = transacoes(:cliente_one_third)
+
+    travel_to Time.current do
+      get cliente_extrato_url(cliente_id: @cliente.id)
+      assert_response :success
+
+      expected_response = {
+        saldo: {
+          total: @cliente.saldo,
+          data_extrato: Time.current,
+          limite: @cliente.limite
+        },
+        ultimas_transacoes: [transacao_03, transacao_02, transacao_01].map do |transacao|
+          {
+            valor: transacao.valor,
+            tipo: transacao.tipo,
+            descricao: transacao.descricao,
+            realizada_em: transacao.created_at
+          }
+        end
+      }.to_json
+      assert_equal expected_response, response.body
+    end
+  end
+
+  test "should response with 404 for Cliente's Extrato using unknown Cliente#id" do
+    get cliente_extrato_url(cliente_id: 666)
+    assert_response :not_found
+  end
+
   test "should create transacao de credito" do
     assert_difference("Transacao.count") do
       post cliente_transacoes_url(cliente_id: @cliente.id), params: {
