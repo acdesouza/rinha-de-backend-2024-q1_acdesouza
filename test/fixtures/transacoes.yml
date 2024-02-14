@@ -1,0 +1,5 @@
+one:
+  valor: 4200
+  tipo: 'c'
+  descricao: 'LIMITE__10'
+  cliente: cliente_one

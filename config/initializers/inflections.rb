@@ -14,3 +14,8 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+ActiveSupport::Inflector.inflections do |inflect|
+  # Sem acentos...
+  inflect.plural(/ao$/i,  'oes')
+  inflect.singular(/oes$/i, 'ao')
+end

@@ -1,0 +1,5 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+cliente_one:
+  limite: 4200
+  saldo_inicial: 0
