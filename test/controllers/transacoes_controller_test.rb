@@ -40,4 +40,18 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
     }.to_json
     assert_equal expected_cliente_account, response.body
   end
+
+  test "should NOT create transacao de debito breaking the Cliente limite" do
+    value_to_attempt_to_break_limit = @cliente.saldo - @cliente.saldo - (@cliente.limite + 1)
+
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: @cliente.id), params: {
+        valor: value_to_attempt_to_break_limit,
+        tipo: "d",
+        descricao: "QUEBRLIMIT"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
 end
