@@ -3,6 +3,7 @@ class Transacao < ApplicationRecord
 
   enum :tipo, credito: 'c', debito: 'd'
 
+  validates :valor, numericality: { only_integer: true, greater_than: 0 }
   validate :respects_cliente_limite
 
   private

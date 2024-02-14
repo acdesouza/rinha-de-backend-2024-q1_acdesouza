@@ -54,4 +54,16 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  test "should NOT create transacao using a negative number on valor" do
+    assert_no_difference("Transacao.count") do
+      post cliente_transacoes_url(cliente_id: @cliente.id), params: {
+        valor: -10,
+        tipo: "c",
+        descricao: "NEG_VALUE"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+  end
 end
