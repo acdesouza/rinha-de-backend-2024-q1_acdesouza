@@ -9,7 +9,7 @@
   [4, 10000000, 0],
   [5,   500000, 0]
 ].each do |cliente_row|
-  Cliente.create(
+  Cliente.find_or_create_by(
     id:            cliente_row[0],
     limite:        cliente_row[1],
     saldo_inicial: cliente_row[2],
