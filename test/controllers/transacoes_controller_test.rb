@@ -23,7 +23,7 @@ class TransacoesControllerTest < ActionDispatch::IntegrationTest
         ultimas_transacoes: [transacao_03, transacao_02, transacao_01].map do |transacao|
           {
             valor: transacao.valor,
-            tipo: transacao.tipo,
+            tipo: transacao.tipo[0],
             descricao: transacao.descricao,
             realizada_em: transacao.created_at
           }

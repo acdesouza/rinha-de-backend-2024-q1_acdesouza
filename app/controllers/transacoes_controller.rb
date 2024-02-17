@@ -11,7 +11,7 @@ class TransacoesController < ApplicationController
       ultimas_transacoes: @cliente.transacoes.order(created_at: :desc).limit(10).map do |transacao|
         {
           valor: transacao.valor,
-          tipo: transacao.tipo,
+          tipo: transacao.tipo[0],
           descricao: transacao.descricao,
           realizada_em: transacao.created_at
         }
@@ -20,9 +20,9 @@ class TransacoesController < ApplicationController
   end
 
   def create
-    @transacao = @cliente.transacoes.build(transacao_params)
+    @transacao = @cliente.move_money!(transacao_params)
 
-    if @transacao.save
+    if @transacao.persisted?
       render json: {
         limite: @cliente.limite,
         saldo: @cliente.saldo
