@@ -13,5 +13,6 @@
     id:            cliente_row[0],
     limite:        cliente_row[1],
     saldo_inicial: cliente_row[2],
+    balance:       cliente_row[2]
   )
 end

@@ -2,29 +2,33 @@ class Cliente < ApplicationRecord
   has_many :transacoes
 
   def saldo
-    self.with_lock do
-    creditos = transacoes.credito.sum(:valor)
-    debitos  = transacoes.debito.sum(:valor)
-
-    saldo_inicial + creditos - debitos
-    end
+    self.balance
   end
 
   def move_money!(transacao_params)
+    me = self
     valor = transacao_params[:valor]
 
     self.with_lock do
-      saldo_and_limite = saldo + limite
-      logger.debug "Saldo e limite: #{saldo}, #{limite}, #{valor}, #{saldo_and_limite - valor}, #{saldo_and_limite - valor < 0}"
+      saldo_and_limite = (me.balance || me.saldo_inicial) + me.limite
+      logger.debug("Saldo e limite: #{balance}, #{limite}, #{valor}, #{saldo_and_limite - valor}, #{saldo_and_limite - valor < 0}")
+      transacao = me.transacoes.build(transacao_params)
+      updated_balance = me.balance
 
-      transacao = self.transacoes.build(transacao_params)
-
-
-      if transacao.debito? && (saldo_and_limite - valor < 0)
-        transacao.errors.add(:base, :cliente_nao_tem_limite_suficiente)
+      if transacao.credito?
+        updated_balance += transacao.valor
       else
-        transacao.save
+        if saldo_and_limite - valor < 0
+          return transacao.tap do |t|
+            t.errors.add(:base, :cliente_nao_tem_limite_suficiente)
+          end
+        end
+
+        updated_balance -= transacao.valor
       end
+
+      me.update_column(:balance, updated_balance)
+      transacao.save
 
       transacao
     end

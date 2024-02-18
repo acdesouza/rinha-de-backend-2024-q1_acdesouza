@@ -3,4 +3,5 @@
 cliente_one:
   limite: 4200
   saldo_inicial: 0
+  balance: 4200
   created_at: <%= 3.days.ago %>

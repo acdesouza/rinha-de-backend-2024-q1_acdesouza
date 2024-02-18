@@ -6,6 +6,10 @@ class ClienteTest < ActiveSupport::TestCase
     cliente_transacoes_count = cliente.transacoes.count
     cliente_saldo_and_limite = cliente.saldo + cliente.limite
 
+    pp cliente
+    pp cliente.saldo
+    pp cliente_saldo_and_limite
+
     assert_equal(5, ActiveRecord::Base.connection.pool.size)
     begin
       concurrency_level = 4
@@ -16,12 +20,6 @@ class ClienteTest < ActiveSupport::TestCase
       threads = Array.new(concurrency_level) do |i|
         Thread.new do
           true while should_wait
-          # Unique validation for key values exists scoped to keyboard
-          # transacao = cliente.transacoes.build(
-          #   valor: cliente_saldo_and_limite,
-          #   tipo: 'd',
-          #   descricao: 'RACE_COND'
-          # )
           transacao = cliente.move_money!({
             valor: cliente_saldo_and_limite,
             tipo: 'd',
@@ -33,6 +31,7 @@ class ClienteTest < ActiveSupport::TestCase
       should_wait = false
       threads.each(&:join)
 
+      pp statuses
       cliente.reload
       assert_equal(0, cliente.saldo + cliente.limite)
       assert_equal(cliente_transacoes_count + 1, cliente.transacoes.count)
