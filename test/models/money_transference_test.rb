@@ -1,14 +1,10 @@
 require "test_helper"
 
-class ClienteTest < ActiveSupport::TestCase
+class MoneyTransferenceTest < ActiveSupport::TestCase
   test "should prevent race condition to disrespect cliente limite" do
     cliente = clientes(:cliente_one)
     cliente_transacoes_count = cliente.transacoes.count
     cliente_saldo_and_limite = cliente.saldo + cliente.limite
-
-    pp cliente
-    pp cliente.saldo
-    pp cliente_saldo_and_limite
 
     assert_equal(5, ActiveRecord::Base.connection.pool.size)
     begin
@@ -20,18 +16,24 @@ class ClienteTest < ActiveSupport::TestCase
       threads = Array.new(concurrency_level) do |i|
         Thread.new do
           true while should_wait
-          transacao = cliente.move_money!({
+          money_transference = MoneyTransference.new.to(cliente.id, {
             valor: cliente_saldo_and_limite,
             tipo: 'd',
             descricao: 'RACE_COND'
           })
+          transacao = money_transference.transacao
+          # transacao = cliente.move_money!({
+          #   valor: cliente_saldo_and_limite,
+          #   tipo: 'd',
+          #   descricao: 'RACE_COND'
+          # })
           statuses[i] = transacao.persisted?
         end
       end
       should_wait = false
       threads.each(&:join)
 
-      pp statuses
+      Rails.logger.info statuses
       cliente.reload
       assert_equal(0, cliente.saldo + cliente.limite)
       assert_equal(cliente_transacoes_count + 1, cliente.transacoes.count)

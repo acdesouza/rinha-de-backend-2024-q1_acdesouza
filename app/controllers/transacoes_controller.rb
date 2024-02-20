@@ -1,14 +1,14 @@
 class TransacoesController < ApplicationController
-  before_action :set_cliente
-
   def index
+    cliente = Cliente.find(params[:cliente_id])
+
     render json: {
       saldo: {
-        total: @cliente.saldo,
+        total: cliente.saldo,
         data_extrato: Time.current,
-        limite: @cliente.limite
+        limite: cliente.limite
       },
-      ultimas_transacoes: @cliente.transacoes.order(created_at: :desc).limit(10).map do |transacao|
+      ultimas_transacoes: cliente.transacoes.order(created_at: :desc).limit(10).map do |transacao|
         {
           valor: transacao.valor,
           tipo: transacao.tipo[0],
@@ -20,24 +20,22 @@ class TransacoesController < ApplicationController
   end
 
   def create
-    @transacao = @cliente.move_money!(transacao_params)
+    money_transference = MoneyTransference.new.to(params[:cliente_id], transacao_params)
 
-    if @transacao.persisted?
+    cliente   = money_transference.cliente
+    transacao = money_transference.transacao
+
+    if transacao.persisted?
       render json: {
-        limite: @cliente.limite,
-        saldo: @cliente.saldo
+        limite: cliente.limite,
+        saldo: cliente.saldo
       }, status: 200
     else
-      render json: @transacao.errors, status: :unprocessable_entity
+      render json: transacao.errors, status: :unprocessable_entity
     end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_cliente
-      @cliente = Cliente.find(params[:cliente_id])
-    end
-
     # Only allow a list of trusted parameters through.
     def transacao_params
       params.require(:transacao).permit(:valor, :tipo, :descricao)
